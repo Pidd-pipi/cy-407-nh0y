@@ -9,6 +9,7 @@ export interface TourNode {
   narration: string;
 }
 
+/** 旧版独立导览实体，仅用于迁移历史数据 */
 export interface Tour {
   id: string;
   exhibitionId: string;
@@ -17,5 +18,3 @@ export interface Tour {
   createdAt: string;
   updatedAt: string;
 }
-
-export type TourDraft = Omit<Tour, 'id' | 'createdAt' | 'updatedAt'>;

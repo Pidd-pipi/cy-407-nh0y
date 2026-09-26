@@ -1,27 +1,29 @@
 <template>
   <n-config-provider :theme-overrides="themeOverrides">
     <n-message-provider>
-      <div class="app-shell">
-        <header class="topbar">
-          <RouterLink class="brand" to="/">
-            <span>工艺品3D展示画廊</span>
-            <strong>Craft Gallery</strong>
-          </RouterLink>
-          <nav>
-            <RouterLink :to="galleryPath">3D展厅</RouterLink>
-            <RouterLink to="/manage/artifacts">展品库</RouterLink>
-            <RouterLink to="/manage/exhibitions">展览管理</RouterLink>
-            <RouterLink :to="tourPath">导览编辑</RouterLink>
-          </nav>
-        </header>
-        <main>
-          <RouterView v-if="ready" />
-          <div v-else class="boot-state">
-            <n-spin size="large" />
-            <span>正在读取本地展厅数据</span>
-          </div>
-        </main>
-      </div>
+      <n-dialog-provider>
+        <div class="app-shell">
+          <header class="topbar">
+            <RouterLink class="brand" to="/">
+              <span>工艺品3D展示画廊</span>
+              <strong>Craft Gallery</strong>
+            </RouterLink>
+            <nav>
+              <RouterLink :to="galleryPath">3D展厅</RouterLink>
+              <RouterLink to="/manage/artifacts">展品库</RouterLink>
+              <RouterLink to="/manage/exhibitions">展览管理</RouterLink>
+              <RouterLink :to="tourPath">导览编辑</RouterLink>
+            </nav>
+          </header>
+          <main>
+            <RouterView v-if="ready" />
+            <div v-else class="boot-state">
+              <n-spin size="large" />
+              <span>正在读取本地展厅数据</span>
+            </div>
+          </main>
+        </div>
+      </n-dialog-provider>
     </n-message-provider>
   </n-config-provider>
 </template>
@@ -33,16 +35,14 @@ import type { GlobalThemeOverrides } from 'naive-ui';
 import { useAnnotationStore } from '@/stores/annotation';
 import { useArtifactStore } from '@/stores/artifact';
 import { useExhibitionStore } from '@/stores/exhibition';
-import { useTourStore } from '@/stores/tour';
 
 const artifactStore = useArtifactStore();
 const exhibitionStore = useExhibitionStore();
 const annotationStore = useAnnotationStore();
-const tourStore = useTourStore();
 const ready = ref(false);
 
 const galleryPath = computed(() => `/exhibitions/${exhibitionStore.exhibitions[0]?.id ?? 'exhibition-heritage-hall'}`);
-const tourPath = computed(() => `/manage/tours/${tourStore.tours[0]?.id ?? 'tour-default-route'}`);
+const tourPath = computed(() => `/manage/tours/${exhibitionStore.exhibitions[0]?.id ?? 'exhibition-heritage-hall'}`);
 
 const themeOverrides: GlobalThemeOverrides = {
   common: {
@@ -69,7 +69,6 @@ onMounted(async () => {
   await artifactStore.load();
   await exhibitionStore.load();
   await annotationStore.load();
-  await tourStore.load();
   ready.value = true;
 });
 </script>

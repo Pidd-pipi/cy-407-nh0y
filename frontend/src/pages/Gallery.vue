@@ -1,12 +1,13 @@
 <template>
-  <section v-if="exhibition" class="gallery-page">
+  <section v-if="exhibition && live" class="gallery-page">
     <div class="page-head">
       <div>
-        <h1>{{ exhibition.title }}</h1>
-        <p>{{ exhibition.intro }}</p>
+        <h1>{{ live.title }}</h1>
+        <p>{{ live.intro }}</p>
       </div>
       <div class="gallery-actions">
-        <n-tag :bordered="false">{{ exhibition.curator }}</n-tag>
+        <n-tag :bordered="false" type="success">线上 v{{ live.version }}</n-tag>
+        <n-tag :bordered="false">{{ live.curator }}</n-tag>
         <n-button secondary @click="toggleTour">{{ isTouring ? '暂停导览' : '自动导览' }}</n-button>
       </div>
     </div>
@@ -34,6 +35,7 @@
       />
     </SceneCanvas>
   </section>
+  <n-result v-else-if="exhibition" status="info" title="展览尚未发布" description="该展览还没有线上版本，请先在展览管理中发布。" />
   <n-result v-else status="404" title="展览不存在" description="请先在展览管理中创建或发布展览。" />
 </template>
 
@@ -47,8 +49,7 @@ import { useThreeScene } from '@/hooks/useThreeScene';
 import { useAnnotationStore } from '@/stores/annotation';
 import { useArtifactStore } from '@/stores/artifact';
 import { useExhibitionStore } from '@/stores/exhibition';
-import { useTourStore } from '@/stores/tour';
-import type { Artifact, Tour } from '@/types';
+import type { Artifact, ExhibitionTour } from '@/types';
 import { createGalleryHall, loadArtifactObject } from '@/utils/model-loader';
 import { disposeObject3D } from '@/utils/renderer';
 import { createTourPlayer, type TourPlayerControls } from '@/utils/tour-player';
@@ -57,7 +58,6 @@ const route = useRoute();
 const artifactStore = useArtifactStore();
 const exhibitionStore = useExhibitionStore();
 const annotationStore = useAnnotationStore();
-const tourStore = useTourStore();
 
 const containerRef = ref<HTMLElement | null>(null);
 const selectedArtifactId = ref<string | undefined>();
@@ -75,18 +75,18 @@ const exhibition = computed(() => {
   return exhibitionStore.getById(id) ?? exhibitionStore.exhibitions[0];
 });
 
+/** 3D 展厅只展示线上快照，草稿修改不会影响参观者看到的内容 */
+const live = computed(() => exhibition.value?.live);
+
 const artifacts = computed<Artifact[]>(() => {
-  const ids = exhibition.value?.artifactIds ?? [];
+  const ids = live.value?.artifactIds ?? [];
   return ids.map((id) => artifactStore.getById(id)).filter((artifact): artifact is Artifact => Boolean(artifact));
 });
 
 const selectedArtifact = computed(() => artifactStore.getById(selectedArtifactId.value ?? ''));
-const activeTour = computed<Tour | undefined>(() => {
-  if (!exhibition.value) return undefined;
-  return tourStore.byExhibitionId(exhibition.value.id)[0];
-});
+const activeTour = computed<ExhibitionTour | undefined>(() => live.value?.tour ?? undefined);
 
-const sceneKey = computed(() => `${three.ready.value}-${exhibition.value?.id}-${artifacts.value.map((item) => item.id).join('|')}`);
+const sceneKey = computed(() => `${three.ready.value}-${exhibition.value?.id}-${live.value?.version ?? 'none'}`);
 
 function onSceneReady(element: HTMLElement) {
   containerRef.value = element;
@@ -94,13 +94,13 @@ function onSceneReady(element: HTMLElement) {
 }
 
 async function rebuildScene() {
-  if (!three.ready.value || !three.scene.value || !exhibition.value) return;
+  if (!three.ready.value || !three.scene.value || !live.value) return;
   if (sceneRoot) {
     three.scene.value.remove(sceneRoot);
     disposeObject3D(sceneRoot);
   }
 
-  const root = createGalleryHall(exhibition.value.themeColor);
+  const root = createGalleryHall(live.value.themeColor);
   const spacing = 4.1;
   await Promise.all(
     artifacts.value.map(async (artifact, index) => {

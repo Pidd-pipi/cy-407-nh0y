@@ -6,10 +6,10 @@
 
 - 3D 展厅：Three.js 渲染展厅空间，支持拖拽旋转、滚轮缩放、点击展品查看详情。
 - 展品详情：独立 360° 模型查看器，右侧信息面板展示作者、工艺、材质、尺寸和标注。
-- 展览管理：创建、编辑、删除展览，调整展品顺序，设置主题色并发布。
-- 导览编辑：时间轴式节点编辑，配置展品、相机位置、目标点、过渡时长和讲解文字。
+- 展览管理：草稿与线上快照分离，编辑只改草稿；发布确认会写明被覆盖的版本号，发布后版本号加一，展品顺序、主题色和导览一起生效；保留最近五个历史版本，可随时回滚。
+- 导览编辑：时间轴式节点编辑，配置展品、相机位置、目标点、过渡时长和讲解文字；修改保存在草稿中，随展览发布一起上线。
 - 展品库：网格/列表视图切换，维护展品资料，上传本地图片和 GLB/GLTF 模型。
-- 本地持久化：IndexedDB 保存四类业务实体，File API + Blob 保存图片和 3D 模型文件。
+- 本地持久化：IndexedDB 保存四类业务实体，展览的草稿、线上版本和最近五个历史版本重启后均可读回，File API + Blob 保存图片和 3D 模型文件。
 - Three.js 生命周期：统一 renderer 管理、动画循环和组件卸载资源释放。
 
 ## 快速启动
@@ -41,7 +41,7 @@ npm run preview
 ```text
 frontend/src/
 ├── api/           # storage.ts：IndexedDB 数据层仓库
-├── stores/        # artifact.ts, exhibition.ts, annotation.ts, tour.ts
+├── stores/        # artifact.ts, exhibition.ts, annotation.ts
 ├── types/         # artifact.ts, exhibition.ts, annotation.ts, tour.ts, enums.ts
 ├── components/
 │   ├── common/    # SceneCanvas, ArtifactCard, InfoPanel, FileUploader, ExhibitionCard
@@ -51,7 +51,7 @@ frontend/src/
 ├── pages/         # Gallery, ArtifactDetail, ExhibitionManage, TourEditor, ArtifactManage
 ├── router/
 ├── styles/
-└── utils/         # storage.ts, renderer.ts, model-loader.ts, tour-player.ts
+└── utils/         # storage.ts, exhibition.ts, renderer.ts, model-loader.ts, tour-player.ts
 ```
 
 ## 3D功能截图占位

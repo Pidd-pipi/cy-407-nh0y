@@ -21,4 +21,5 @@ function createRepository<T extends { id: string }>(storeName: EntityStoreName) 
 export const artifactRepository = createRepository<Artifact>('artifacts');
 export const exhibitionRepository = createRepository<Exhibition>('exhibitions');
 export const annotationRepository = createRepository<Annotation>('annotations');
-export const tourRepository = createRepository<Tour>('tours');
+/** 旧版独立导览实体仓库，仅用于迁移历史数据 */
+export const legacyTourRepository = createRepository<Tour>('tours');
