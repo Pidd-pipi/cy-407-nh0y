@@ -1,27 +1,29 @@
 <template>
   <n-config-provider :theme-overrides="themeOverrides">
     <n-message-provider>
-      <div class="app-shell">
-        <header class="topbar">
-          <RouterLink class="brand" to="/">
-            <span>工艺品3D展示画廊</span>
-            <strong>Craft Gallery</strong>
-          </RouterLink>
-          <nav>
-            <RouterLink :to="galleryPath">3D展厅</RouterLink>
-            <RouterLink to="/manage/artifacts">展品库</RouterLink>
-            <RouterLink to="/manage/exhibitions">展览管理</RouterLink>
-            <RouterLink :to="tourPath">导览编辑</RouterLink>
-          </nav>
-        </header>
-        <main>
-          <RouterView v-if="ready" />
-          <div v-else class="boot-state">
-            <n-spin size="large" />
-            <span>正在读取本地展厅数据</span>
-          </div>
-        </main>
-      </div>
+      <n-dialog-provider>
+        <div class="app-shell">
+          <header class="topbar">
+            <RouterLink class="brand" to="/">
+              <span>工艺品3D展示画廊</span>
+              <strong>Craft Gallery</strong>
+            </RouterLink>
+            <nav>
+              <RouterLink :to="galleryPath">3D展厅</RouterLink>
+              <RouterLink to="/manage/artifacts">展品库</RouterLink>
+              <RouterLink to="/manage/exhibitions">展览管理</RouterLink>
+              <RouterLink :to="tourPath">导览编辑</RouterLink>
+            </nav>
+          </header>
+          <main>
+            <RouterView v-if="ready" />
+            <div v-else class="boot-state">
+              <n-spin size="large" />
+              <span>正在读取本地展厅数据</span>
+            </div>
+          </main>
+        </div>
+      </n-dialog-provider>
     </n-message-provider>
   </n-config-provider>
 </template>
@@ -41,7 +43,10 @@ const annotationStore = useAnnotationStore();
 const tourStore = useTourStore();
 const ready = ref(false);
 
-const galleryPath = computed(() => `/exhibitions/${exhibitionStore.exhibitions[0]?.id ?? 'exhibition-heritage-hall'}`);
+const galleryPath = computed(() => {
+  const target = exhibitionStore.published[0] ?? exhibitionStore.exhibitions[0];
+  return `/exhibitions/${target?.id ?? 'exhibition-heritage-hall'}`;
+});
 const tourPath = computed(() => `/manage/tours/${tourStore.tours[0]?.id ?? 'tour-default-route'}`);
 
 const themeOverrides: GlobalThemeOverrides = {

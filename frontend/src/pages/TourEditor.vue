@@ -15,7 +15,7 @@
     <div class="tour-grid">
       <section class="panel-surface timeline-panel">
         <div class="tour-meta">
-          <strong>{{ exhibition?.title ?? '未绑定展览' }}</strong>
+          <strong>{{ exhibition?.draft.title ?? '未绑定展览' }}</strong>
           <span>{{ tour.nodes.length }} 个导览节点</span>
         </div>
         <TourTimeline

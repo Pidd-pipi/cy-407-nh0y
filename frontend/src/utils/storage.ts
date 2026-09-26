@@ -71,15 +71,20 @@ export async function getRecord<T extends { id: string }>(storeName: EntityStore
   return (await db.get(storeName, id)) as T | undefined;
 }
 
+/** 写入前剥离响应式代理：IndexedDB 的 structuredClone 无法克隆 Proxy 对象 */
+function toPlainRecord<T>(value: T): T {
+  return JSON.parse(JSON.stringify(value)) as T;
+}
+
 export async function putRecord<T extends { id: string }>(storeName: EntityStoreName, value: T): Promise<void> {
   const db = await getDatabase();
-  await db.put(storeName, value);
+  await db.put(storeName, toPlainRecord(value));
 }
 
 export async function putManyRecords<T extends { id: string }>(storeName: EntityStoreName, values: T[]): Promise<void> {
   const db = await getDatabase();
   const tx = db.transaction(storeName, 'readwrite');
-  await Promise.all(values.map((value) => tx.store.put(value)));
+  await Promise.all(values.map((value) => tx.store.put(toPlainRecord(value))));
   await tx.done;
 }
 

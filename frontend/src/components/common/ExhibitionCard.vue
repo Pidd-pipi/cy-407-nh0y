@@ -1,13 +1,13 @@
 <template>
-  <article class="exhibition-card" :style="{ '--theme': exhibition.themeColor }">
+  <article class="exhibition-card" :style="{ '--theme': exhibition.draft.themeColor }">
     <div class="status-line">
-      <span>{{ exhibitionStatusLabels[exhibition.status] }}</span>
+      <span>{{ statusText }}</span>
       <strong>{{ artifactCount }} 件展品</strong>
     </div>
-    <h3>{{ exhibition.title }}</h3>
-    <p>{{ exhibition.intro }}</p>
+    <h3>{{ exhibition.draft.title || '未命名展览' }}</h3>
+    <p>{{ exhibition.draft.intro }}</p>
     <footer>
-      <span>{{ exhibition.curator }}</span>
+      <span>{{ exhibition.draft.curator }}</span>
       <div>
         <n-button size="small" secondary @click="$emit('open', exhibition.id)">进入</n-button>
         <n-button size="small" quaternary @click="$emit('edit', exhibition.id)">编辑</n-button>
@@ -17,18 +17,28 @@
 </template>
 
 <script setup lang="ts">
+import { computed } from 'vue';
 import type { Exhibition } from '@/types';
 import { exhibitionStatusLabels } from '@/types';
 
-defineProps<{
+const props = defineProps<{
   exhibition: Exhibition;
   artifactCount: number;
+  hasChanges?: boolean;
 }>();
 
 defineEmits<{
   open: [id: string];
   edit: [id: string];
 }>();
+
+const statusText = computed(() => {
+  const base =
+    props.exhibition.version > 0
+      ? `v${props.exhibition.version} · ${exhibitionStatusLabels[props.exhibition.status]}`
+      : exhibitionStatusLabels[props.exhibition.status];
+  return props.exhibition.version > 0 && props.hasChanges ? `${base} · 有未发布修改` : base;
+});
 </script>
 
 <style scoped>
